@@ -1,6 +1,12 @@
 # Prerequisites
 *.d
 
+.DS_Store
+
+# full cloned SDL3 repo
+vendored/SDL
+vendored/.DS_Store
+
 # Compiled Object files
 *.slo
 *.lo
