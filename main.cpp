@@ -33,7 +33,6 @@ int main(int argc, char* argv[])
 
     // move this to header file somewhere later but for now just get one circle going
     float velocityY = 0.0;
-    auto startT = std::chrono::steady_clock::now();
 
     while(1) 
     {
@@ -46,12 +45,8 @@ int main(int argc, char* argv[])
         }
 
         // TODO: quick readover of C++ 11 book on the std::chrono library!!!
-        auto endTime = std::chrono::steady_clock::now();
+        // don't use auto unless you 100% understand what the datatype / class returned is
 
-        // same as auto duration = std::chrono::duration<....>
-        auto duration = std::chrono::duration<double, std::milli>(endTime - startT);
-                                                                    //
-        std::cout << "It took " << duration.count() << " milliseconds.\n";
         // TODO: update state of body
 
         // rendering draws over whatever was drawn before
