@@ -12,7 +12,14 @@ add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 
 # run (./build/main)
 add_custom_target(run COMMAND ${CMAKE_BINARY_DIR}/Debug/main DEPENDS main)
-add_custom_target(debug COMMAND lldb ${CMAKE_BINARY_DIR}/Debug/main DEPENDS main)
+
+if (CMAKE_SYSTEM MATCHES Linux)
+    add_custom_target(debug COMMAND gdb ${CMAKE_BINARY_DIR}/Debug/main DEPENDS main)
+endif()
+
+if (CMAKE_SYSTEM MATCHES Darwin)
+    add_custom_target(debug COMMAND lldb ${CMAKE_BINARY_DIR}/Debug/main DEPENDS main)
+endif()
 
 # for now this is our simple main.cpp -> main executable target
 add_executable(main main.cpp)
