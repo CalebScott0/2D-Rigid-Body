@@ -1,6 +1,9 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <cmath>
+#include <chrono>
+
+#include <iostream>
 
 #include "Circle.hpp"
 
@@ -30,20 +33,30 @@ int main(int argc, char* argv[])
 
     // move this to header file somewhere later but for now just get one circle going
     float velocityY = 0.0;
-    while(1)
+    auto startT = std::chrono::steady_clock::now();
+
+    while(1) 
     {
-        
         SDL_PollEvent(&event);
         // event.type is Uint32
-        if(event.type == SDL_EVENT_QUIT) // user-requested quit enum (SDL_EventType value = 256)
+        // user-requested quit enum (SDL_EventType value = 256)
+        if(event.type == SDL_EVENT_QUIT)
         {
             break;
         }
 
+        // TODO: quick readover of C++ 11 book on the std::chrono library!!!
+        auto endTime = std::chrono::steady_clock::now();
+
+        // same as auto duration = std::chrono::duration<....>
+        auto duration = std::chrono::duration<double, std::milli>(endTime - startT);
+                                                                    //
+        std::cout << "It took " << duration.count() << " milliseconds.\n";
+        // TODO: update state of body
+
         // rendering draws over whatever was drawn before
         SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
-
 
         SDL_FPoint points[100];
         // current window size
@@ -52,12 +65,13 @@ int main(int argc, char* argv[])
 
         SDL_GetWindowSize(window, &width, &height);
 
-        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE); // SDL_ALPHA_OPAQUE just a macro for 255 (max alpha)
+        // SDL_ALPHA_OPAQUE just a macro for 255 (max alpha)
+        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE); 
         
         int xCenter = width >> 1;
         int yCenter = height >> 1;
 
-        Circle circle1(xCenter, yCenter, RADIUS);
+        Circle circle1(xCenter, yCenter + 50, RADIUS);
         drawCircle(renderer, circle1);
 
         SDL_RenderPresent(renderer);
@@ -77,6 +91,12 @@ void drawCircle(SDL_Renderer* renderer, const Circle& body) // TODO: Expand to h
     // TODO: eventually have a class that can handle the creation of a circle and its movement??
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE); // SDL_ALPHA_OPAQUE just a macro for 255 (max alpha)
     
+    // SDL_FPoint
+    // {
+    //     float x;
+    //     float y;
+    // }
+
     SDL_FPoint points[NUM_POINTS];
 
     for(size_t i = 0; i < NUM_POINTS; ++i)
@@ -89,12 +109,4 @@ void drawCircle(SDL_Renderer* renderer, const Circle& body) // TODO: Expand to h
     }
 
     SDL_RenderPoints(renderer, points, sizeof(points) / sizeof(SDL_FPoint));
-
-
-    // SDL_FPoint
-    // {
-    //     float x;
-    //     float y;
-    // }
-
 }
