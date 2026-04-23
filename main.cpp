@@ -52,6 +52,7 @@ int main(int argc, char* argv[])
 
 void drawCircle(SDL_Renderer* renderer) // TODO: Expand to have x and y coordinates
 {
+    // TODO: eventually have a class that can handle the creation of a circle and its movement??
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
 
     // SDL_FPoint
