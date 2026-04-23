@@ -1,8 +1,14 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include <vector>
+#include <cmath>
 
-void drawCircle(SDL_Renderer*);
+#include "Circle.hpp"
+
+void drawCircle(SDL_Renderer*, const Circle& body);
+
+const float GRAVITY_ACCEL = 9.80665;
+const int NUM_POINTS = 1000;
+const float RADIUS = 40.0f;
 
 int main(int argc, char* argv[])
 {
@@ -22,8 +28,11 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    // move this to header file somewhere later but for now just get one circle going
+    float velocityY = 0.0;
     while(1)
     {
+        
         SDL_PollEvent(&event);
         // event.type is Uint32
         if(event.type == SDL_EVENT_QUIT) // user-requested quit enum (SDL_EventType value = 256)
@@ -31,12 +40,25 @@ int main(int argc, char* argv[])
             break;
         }
 
-
         // rendering draws over whatever was drawn before
-        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE); // SDL_ALPHA_OPAQUE just a macro for 255 (max alpha)
+        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
-        drawCircle(renderer);
+
+        SDL_FPoint points[100];
+        // current window size
+        int width;
+        int height;
+
+        SDL_GetWindowSize(window, &width, &height);
+
+        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE); // SDL_ALPHA_OPAQUE just a macro for 255 (max alpha)
+        
+        int xCenter = width >> 1;
+        int yCenter = height >> 1;
+
+        Circle circle1(xCenter, yCenter, RADIUS);
+        drawCircle(renderer, circle1);
 
         SDL_RenderPresent(renderer);
     }
@@ -50,24 +72,29 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void drawCircle(SDL_Renderer* renderer) // TODO: Expand to have x and y coordinates
+void drawCircle(SDL_Renderer* renderer, const Circle& body) // TODO: Expand to have x and y coordinates
 {
     // TODO: eventually have a class that can handle the creation of a circle and its movement??
-    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE); // SDL_ALPHA_OPAQUE just a macro for 255 (max alpha)
+    
+    SDL_FPoint points[NUM_POINTS];
+
+    for(size_t i = 0; i < NUM_POINTS; ++i)
+    {
+        // theta calculated as ratio of current point to NUM_POINTS times max 2pi
+        float theta = 2.0f * M_PI * i / NUM_POINTS;
+
+        points[i].x = body.center.x + body.radius * std::cos(theta);
+        points[i].y = body.center.y + body.radius * std::sin(theta);
+    }
+
+    SDL_RenderPoints(renderer, points, sizeof(points) / sizeof(SDL_FPoint));
+
 
     // SDL_FPoint
     // {
     //     float x;
     //     float y;
     // }
-
-    std::vector<SDL_FPoint> points;
-    points.reserve(100);
-    // SDL_RenderPoints...
-    
-    // we will start by giving our circle a fixed radius (20 pixels)
-    // we must have one centrally tracked point that all others relate to
-    //  check distance from center?
-
 
 }
