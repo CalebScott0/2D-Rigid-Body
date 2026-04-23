@@ -1,9 +1,5 @@
-//#include "SDL3/SDL_events.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-
-#include <cstdint>
-#include <iostream>
 
 int main(int argc, char* argv[])
 {
@@ -31,8 +27,13 @@ int main(int argc, char* argv[])
         {
             break;
         }
-        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+
+
+        // rendering draws over whatever was drawn before
+        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE); // SDL_ALPHA_OPAQUE just a macro for 255 (max alpha)
         SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+        SDL_RenderPoint(renderer, 300, 150);
         SDL_RenderPresent(renderer);
     }
 
