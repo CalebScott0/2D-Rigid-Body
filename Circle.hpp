@@ -1,42 +1,37 @@
-#ifndef CIRCLE_H
-#define CIRCLE_H
+#pragma once
 
-template<typename T>
+// A 2D Vector, point / free vector
 struct Vec2
 {
-    T x;
-    T y;
-
-    Vec2(T _x, T _y)
+    // pixel coordinates
+    float x, y;
+    
+    // TODO: default constructor?
+    Vec2(float _x, float _y)
         : x(_x),
           y(_y)
-    { /* empty */ }
+    {
+        // empty
+    }
+    
+
 };
+// TODO: overload operators Vec2? 
 
 struct Circle
 {
-    // Circle as a shape only needs radius to construct geometrically
-    float radius; 
-
-    // Circle body has a Vec2 center position
-    Vec2<float> center;
-
-    Vec2<float> velocity; // pixels / sec
-
-
-    Circle(float _x, float _y, float _r, float _vX, float _vY)
-        : center(_x, _y),
+    // location of object's center
+    Vec2 center;
+    // radius of circle
+    float radius;
+    // current linear velocity of  circle
+    Vec2 velocity; // pixels / sec
+    Circle(float _xc, float _yc, float _r, float _xv, float _yv)
+        : center(_xc, _yc),
           radius(_r),
-          velocity(_vX, _vY)
-    { 
-        //empty
+          velocity(_xv, _yv)
+    {
+        // empty
     }
-
-    //Circle(float _x, float _y, float _r, float _vX, float _vY)
-        //: center(_x, _y),
-        //radius(_r)
-    //{ /* empty */ }
 };
 
-
-#endif
