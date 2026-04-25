@@ -1,17 +1,16 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <cmath>
-#include <chrono>
-
-#include <iostream>
 
 #include "Circle.hpp"
+#include "SDL3/SDL_timer.h"
 
 void drawCircle(SDL_Renderer*, const Circle& body);
 
-const float GRAVITY_ACCEL = 9.80665;
-const int NUM_POINTS = 1000;
-const float RADIUS = 40.0f;
+const float GRAVITY_ACCEL = 900.0f; // defined in pixels / secs^2
+const int NUM_POINTS = 32;
+const float RADIUS = 40.0f; 
+const float DT = 1.0f / 120.f; // seconds
 
 int main(int argc, char* argv[])
 {
@@ -25,65 +24,93 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (!SDL_CreateWindowAndRenderer("", 520, 340, SDL_WINDOW_RESIZABLE, &window, &renderer))
+    //if (!SDL_CreateWindowAndRenderer("", 1000, 900, SDL_WINDOW_RESIZABLE, &window, &renderer))
+    if (!SDL_CreateWindowAndRenderer("", 1000, 900, 0, &window, &renderer))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window and renderer: %s", SDL_GetError());
         return 1;
     }
 
-    // move this to header file somewhere later but for now just get one circle going
-    float velocityY = 0.0;
+    int xCenter = 500;
+    int yCenter = 100; 
+
+    Circle circle1 (xCenter, yCenter, RADIUS, 200.0f, 0.0f);
 
     while(1) 
     {
-        SDL_PollEvent(&event);
-        // event.type is Uint32
-        // user-requested quit enum (SDL_EventType value = 256)
-        if(event.type == SDL_EVENT_QUIT)
+        while(SDL_PollEvent(&event))
         {
-            break;
+            // event.type is Uint32
+            // user-requested quit enum (SDL_EventType value = 256)
+            if(event.type == SDL_EVENT_QUIT)
+            {
+                return 0;
+            }
         }
 
-        // TODO: quick readover of C++ 11 book on the std::chrono library!!!
-        // don't use auto unless you 100% understand what the datatype / class returned is
-
-        // TODO: update state of body
-
-        // rendering draws over whatever was drawn before
-        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
-        SDL_RenderClear(renderer);
-
-        SDL_FPoint points[100];
-        // current window size
+        //SDL_FPoint points[100];
+        
         int width;
         int height;
 
         SDL_GetWindowSize(window, &width, &height);
 
-        // SDL_ALPHA_OPAQUE just a macro for 255 (max alpha)
-        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE); 
-        
-        int xCenter = width >> 1;
-        int yCenter = height >> 1;
+        // TODO: when you add another circle, draw out what the collision looks like with vectors on paper!
+        //  i.e. it isn't just going oppositie directions, all components to be conserved!!
 
-        Circle circle1(xCenter, yCenter + 50, RADIUS);
+
+        // standard free fall kinematics eq (euler integration)
+        circle1.velocity.y += GRAVITY_ACCEL * DT;
+        circle1.center.y += circle1.velocity.y * DT;
+
+        circle1.center.x += circle1.velocity.x * DT;
+
+        // bottom collision
+        if(circle1.center.y + RADIUS > height) 
+        {
+            // make sure the center is not past collision barrier
+            circle1.center.y = height - RADIUS;
+            // non conserative force -> restitution
+            circle1.velocity.y *= -1.0f;
+            //circle1.velocity.y *= -0.9f;
+        }
+        // side collision
+        if(circle1.center.x + RADIUS > width || circle1.center.x - RADIUS < 0)
+        {
+            // TODO: fix this logic
+            if(circle1.center.x - RADIUS < 0)
+                circle1.center.x = RADIUS;
+            //circle1.velocity.x *= -0.9f;
+            circle1.velocity.x *= -1.0f;
+        }
+
+        // rendering draws over whatever was drawn before
+        // SDL_ALPHA_OPAQUE just a macro for 255 (max alpha)
+        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE); 
+
         drawCircle(renderer, circle1);
+
+        // pause thread for at least 16 milliseconds (60fps)
+        // https://wiki.libsdl.org/SDL3/SDL_Delay
+        // "This function waits a specified number of milliseconds before returning. 
+        // It waits at least the specified time, but possibly longer due to OS scheduling."
+        std::uint32_t d = 8; // approx 1/60 second in milliseconds
+        SDL_Delay(d); // OS sleep functionality
 
         SDL_RenderPresent(renderer);
     }
 
-
-    // cleanup -> TODO: are the first two needed?
-    // SDL_DestroyRenderer(renderer);
-    // SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
     SDL_Quit();
 
     return 0;
 }
 
-void drawCircle(SDL_Renderer* renderer, const Circle& body) // TODO: Expand to have x and y coordinates
+void drawCircle(SDL_Renderer* renderer, const Circle& body)
 {
-    // TODO: eventually have a class that can handle the creation of a circle and its movement??
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE); // SDL_ALPHA_OPAQUE just a macro for 255 (max alpha)
     
     // SDL_FPoint
@@ -92,7 +119,10 @@ void drawCircle(SDL_Renderer* renderer, const Circle& body) // TODO: Expand to h
     //     float y;
     // }
 
-    SDL_FPoint points[NUM_POINTS];
+    SDL_FPoint points[NUM_POINTS + 1];
+
+    // define # points based on radius
+    // where 2r = ... TODO:
 
     for(size_t i = 0; i < NUM_POINTS; ++i)
     {
@@ -103,5 +133,8 @@ void drawCircle(SDL_Renderer* renderer, const Circle& body) // TODO: Expand to h
         points[i].y = body.center.y + body.radius * std::sin(theta);
     }
 
-    SDL_RenderPoints(renderer, points, sizeof(points) / sizeof(SDL_FPoint));
+    // wrap points back around to connect for line
+    points[NUM_POINTS] = points[0];
+
+    SDL_RenderLines(renderer, points, NUM_POINTS+1);
 }

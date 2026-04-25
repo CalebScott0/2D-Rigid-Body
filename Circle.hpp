@@ -19,12 +19,23 @@ struct Circle
     float radius; 
 
     // Circle body has a Vec2 center position
-    const Vec2<float> center;
+    Vec2<float> center;
 
-    Circle(float _x, float _y, float _r)
+    Vec2<float> velocity; // pixels / sec
+
+
+    Circle(float _x, float _y, float _r, float _vX, float _vY)
         : center(_x, _y),
-          radius(_r)
-    { /* empty */ }
+          radius(_r),
+          velocity(_vX, _vY)
+    { 
+        //empty
+    }
+
+    //Circle(float _x, float _y, float _r, float _vX, float _vY)
+        //: center(_x, _y),
+        //radius(_r)
+    //{ /* empty */ }
 };
 
 
