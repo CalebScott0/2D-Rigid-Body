@@ -13,8 +13,6 @@ struct Vec2
     {
         // empty
     }
-    
-
 };
 // TODO: overload operators Vec2? 
 

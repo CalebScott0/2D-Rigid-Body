@@ -1,9 +1,9 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
+#include <cstdint>
 #include <iostream>
 #include "Circle.hpp"
-#include "SDL3/SDL_video.h"
 
 const float RADIUS = 40.0f; // pixels
 
@@ -13,7 +13,7 @@ const float ACCEL = 981.0f; // pixels / seconds^2
 
 // given a circle c of radius r,
 // draw a circle consisting of line connected points
-void drawCircle(const Circle& c);
+void drawCircle(const Circle& c, SDL_Renderer* renderer);
 
 int main(int argc, char *argv[])
 {
@@ -39,7 +39,11 @@ int main(int argc, char *argv[])
 
     // init our circle
     float xVelocity = 200.0f; // pixels / second
-    Circle circle1(500.0f, 100.0f, RADIUS, 0.0f, xVelocity);
+    Circle circle1(500.0f, 100.0f + RADIUS, RADIUS, xVelocity, 0.0f);
+    Circle circle2(500.0f, 100.0f, RADIUS, xVelocity, 0.0f);
+
+    int numCircle = 2;
+    Circle circles[2] { circle1, circle2 };
 
     int height;
     int width;
@@ -60,39 +64,69 @@ int main(int argc, char *argv[])
 
         SDL_GetWindowSize(window, &width, &height);
 
-        // update state (euler method)
-        // time step fixed at 1/60 second
-        circle1.velocity.y += TIME_STEP * ACCEL;
-        circle1.center.y += TIME_STEP * circle1.velocity.y;
-        circle1.center.x += TIME_STEP * circle1.velocity.x;
-
-        // check collision bottom
-        if(circle1.center.y + RADIUS >= height)
-        {
-            // fix position slightly to avoid being stuck at bottom
-            circle1.center.y = height - RADIUS;
-            // velocity = -velocity to return up
-            circle1.velocity.y *= -1.0f;
-        }
-
         // render draws over whatever is already rendered
         SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
         SDL_RenderClear(renderer);
 
-        // now set render color for points
-        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+        // update state (euler method)
+        // time step fixed at 1/60 second
+        for(Circle& c : circles)
+        {
+            c.velocity.y += TIME_STEP * ACCEL;
+            c.center.y += TIME_STEP * c.velocity.y;
+            c.center.x += TIME_STEP * c.velocity.x;
 
-        drawCircle(circle1);
-        SDL_RenderPresent(renderer);
+            // check collision bottom
+            if(c.center.y + RADIUS >= height)
+            {
+                // fix position slightly to avoid being stuck at bottom
+                c.center.y = height - RADIUS;
+                // velocity = -velocity to return up
+                c.velocity.y *= -1.0f;
+            }
+            if(c.center.x + RADIUS >= width)
+            {
+                c.center.x = width - RADIUS;
+                c.velocity.x *= -1.0f;
+            }
+            else if(c.center.x - RADIUS <= 0)
+            {
+           
+                c.center.x = RADIUS;
+                c.velocity.x *= -1.0f;
+            }
+            // now set render color for points
+            SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+
+            drawCircle(c, renderer);
+
+            // must test all pairs .... fuck what the fuck ? def a better way to do this
+        }
     }
-
+    SDL_RenderPresent(renderer);
 
     return 0;
 }
 
-void drawCircle(const Circle& c)
+void drawCircle(const Circle& c, SDL_Renderer* renderer)
 {
-    // how to determine #points based off of radius?
-    // for i in numpoints,
-    // we just want to find the theta offset, so 2.0f * M_PI * (current point # / total points #)
+    // to find the theta offset, so 2.0f * M_PI * (current point # / total points #)
+    //
+    // Determine N : number of points 
+    // Small angle approx starting distance (pixels) between each point
+    // sin(theta) = y/r, where y is the vertical pixel height between points
+    float y = 4.4; 
+    std::uint16_t N = 2.0f * M_PI * RADIUS / y;
+
+    SDL_FPoint points[N + 1];
+
+    for(auto i = 0; i <= N; ++i)
+    {
+        points[i].y = c.center.y + RADIUS * std::sin(2.0f * M_PI * i / N);
+        points[i].x = c.center.x + RADIUS * std::cos(2.0f * M_PI * i / N);
+    }
+    points[N].y = points[0].y;
+    points[N].x = points[0].x;
+
+    SDL_RenderLines(renderer, points, N + 1);
 }
