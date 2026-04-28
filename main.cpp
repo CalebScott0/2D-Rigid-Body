@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <iostream>
 #include "Circle.hpp"
+#include "SDL3/SDL_video.h"
 
 const float RADIUS = 40.0f; // pixels
 
@@ -30,7 +31,7 @@ int main(int argc, char *argv[])
     }
 
     // 1000 window width, 900 window height
-    if(!SDL_CreateWindowAndRenderer("Window", 1000, 800, 0, &window, &renderer))
+    if(!SDL_CreateWindowAndRenderer("Window", 1000, 800, SDL_WINDOW_RESIZABLE, &window, &renderer))
     {
         std::cout << "ERROR: " << SDL_GetError() << std::endl;
         SDL_Quit();
@@ -39,7 +40,7 @@ int main(int argc, char *argv[])
 
     // init our circle
     float xVelocity = 200.0f; // pixels / second
-    Circle circle1(500.0f, 100.0f + RADIUS, RADIUS, xVelocity, 0.0f);
+    Circle circle1(500.0f - (2.0f * RADIUS), 100.0f, RADIUS, xVelocity, 0.0f);
     Circle circle2(500.0f, 100.0f, RADIUS, xVelocity, 0.0f);
 
     int numCircle = 2;
@@ -66,7 +67,10 @@ int main(int argc, char *argv[])
 
         // render draws over whatever is already rendered
         SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+        //SDL_RenderClear(renderer);
+        // now set render color for points
         SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
         // update state (euler method)
         // time step fixed at 1/60 second
@@ -95,8 +99,6 @@ int main(int argc, char *argv[])
                 c.center.x = RADIUS;
                 c.velocity.x *= -1.0f;
             }
-            // now set render color for points
-            SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
             drawCircle(c, renderer);
 
