@@ -177,6 +177,7 @@ int main(int argc, char *argv[])
                 c.velocity.x *= -0.78f;
             }
 
+            // TODO: handle if they are just sitting on the bottom sliding
 
             drawCircle(c, renderer);
             // match frame rate
