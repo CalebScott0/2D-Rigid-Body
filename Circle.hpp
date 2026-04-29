@@ -24,6 +24,7 @@ struct Circle
     float radius;
     // current linear velocity of  circle
     Vec2 velocity; // pixels / sec
+                   
     Circle(float _xc, float _yc, float _r, float _xv, float _yv)
         : center(_xc, _yc),
           radius(_r),
