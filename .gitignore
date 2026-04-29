@@ -5,13 +5,10 @@ build/*
 cmake_install.cmake
 CMakeCache.txt
 CMakeFiles
-Debug
-Makefile
 .DS_Store
+vendored/
 
 # full cloned SDL3 repo
-vendored/SDL
-vendored/.DS_Store
 
 # Compiled Object files
 *.slo
