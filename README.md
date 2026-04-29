@@ -10,12 +10,8 @@
  cmake --build build --target debug
 ```
 
-## Run normally with either
+## Run normally or with debugger
 ```
  cmake --build build
  ./build/debug/main
-```
-or
-```
- cmake --build build --target run
-```
+
