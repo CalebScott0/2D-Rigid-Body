@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CIRCLE_H
+#define CIRCLE_H
 
 // A 2D Vector, point / free vector
 struct Vec2
@@ -34,3 +35,4 @@ struct Circle
     }
 };
 
+#endif
