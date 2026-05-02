@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
     // init our circle
     float x_velocity = 200.0f; // pixels / second
-    Circle circle1(500.0f - (4.0f * RADIUS), 100.0f, RADIUS, -x_velocity, 0.0f);
+    Circle circle1(500.0f - (4.0f * RADIUS), 100.0f, RADIUS, -x_velocity, -100.0f);
     Circle circle2(500.0f, 400.0f, RADIUS, 1.7f * x_velocity, 0.0f);
 
     // now make it for an arbitrary amount with a slider (pairs)
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
         float dist = std::sqrt(dist_x*dist_x + dist_y * dist_y);
 
         // object collision
-        if(dist < (2.0f * RADIUS))
+        if(dist <= (2.1f * RADIUS))
         {
             // TODO: Fix these variable names lmaooooo
             
@@ -110,8 +110,8 @@ int main(int argc, char *argv[])
             
             // components of unit tangent vector between the objects where the unit tangent is (-norm_y, norm_x)
             // Orthogonal (orthonormal) to the unit normal vector
-            float tangX = -norm_y;
-            float tangY = norm_x;
+            float tang_X = -norm_y;
+            float tang_Y = norm_x;
 
             // project the velocity vectors onto the unit normal and
             // unit tangent vectors by taking the dot product of the velocity vectors with the unit normal and
@@ -123,8 +123,8 @@ int main(int argc, char *argv[])
             float v1_normal = norm_x * circles[0].velocity.x + norm_y * circles[0].velocity.y;
             float v2_normal = norm_x * circles[1].velocity.x + norm_y * circles[1].velocity.y;
 
-            float v1_tangent = tangX * circles[0].velocity.x + tangY * circles[0].velocity.y;
-            float v2_tangent = tangX * circles[1].velocity.x + tangY * circles[1].velocity.y;
+            float v1_tangent = tang_X * circles[0].velocity.x + tang_Y * circles[0].velocity.y;
+            float v2_tangent = tang_X * circles[1].velocity.x + tang_Y * circles[1].velocity.y;
 
             // update normal velocities after collision (follows new v1_normal` = v2_normal, new V1 normal = v2_normal dot unit normal
             float new_v1_normal_X = v2_normal * norm_x;
@@ -134,18 +134,18 @@ int main(int argc, char *argv[])
             float new_v2_normal_Y = v1_normal * norm_y;
 
             // updated tangent velocities after collision (no force in the tangential direction, same scalar after collision)
-            float new_v1_tangent_X = v1_tangent * tangX;
-            float new_v1_tangent_Y = v1_tangent * tangY;
+            float new_v1_tangent_X = v1_tangent * tang_X;
+            float new_v1_tangent_Y = v1_tangent * tang_Y;
 
-            float new_v2_tangent_X = v2_tangent * tangX;
-            float new_v2_tangent_Y = v2_tangent * tangY;
+            float new_v2_tangent_X = v2_tangent * tang_X;
+            float new_v2_tangent_Y = v2_tangent * tang_Y;
 
             // now just add the new normal and tangent vectors together 
-            circles[0].velocity.x = 0.9f * (new_v1_normal_X + new_v1_tangent_X);
-            circles[0].velocity.y = 0.9f * (new_v1_normal_Y + new_v1_tangent_Y);
+            circles[0].velocity.x = (new_v1_normal_X + new_v1_tangent_X);
+            circles[0].velocity.y = (new_v1_normal_Y + new_v1_tangent_Y);
 
-            circles[1].velocity.x = 0.9f * (new_v2_normal_X + new_v2_tangent_X);
-            circles[1].velocity.y = 0.9f * (new_v2_normal_Y + new_v2_tangent_Y);
+            circles[1].velocity.x = (new_v2_normal_X + new_v2_tangent_X);
+            circles[1].velocity.y = (new_v2_normal_Y + new_v2_tangent_Y);
         }
 
         // update state (euler method)
@@ -163,18 +163,18 @@ int main(int argc, char *argv[])
                 // fix position slightly to avoid being stuck at bottom
                 c.center.y = height - RADIUS - 0.55;
                 // velocity = -velocity to return up
-                c.velocity.y *= -0.85f;
+                c.velocity.y *= -0.95f;
             }
             if(c.center.x + RADIUS >= width)
             {
                 c.center.x = width - RADIUS;
-                c.velocity.x *= -0.78f;
+                c.velocity.x *= -0.9f;
             }
             else if(c.center.x - RADIUS <= 0)
             {
            
                 c.center.x = RADIUS;
-                c.velocity.x *= -0.78f;
+                c.velocity.x *= -0.9f;
             }
 
             // TODO: handle if they are just sitting on the bottom sliding
